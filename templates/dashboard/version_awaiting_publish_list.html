@@ -1,0 +1,33 @@
+{% extends 'dashboard/version_list.html' %}
+{% load i18n %}
+{% load bootstrap3 %}
+{% load megforms_extras %}
+{% load static %}
+
+{% block list_columns %}
+{{block.super}}
+<th>{% trans 'Action' %}</th>
+{% endblock %}
+
+{% block list_rows %}
+{{block.super}}
+<td class="actions">
+    {% if perms.megdocs.change_document %}
+    <div class="btn-group btn-group-sm">
+        <form action="{% url 'docs:manage:version-review' institution_slug=institution.slug pk=version.pk %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="publish" value="true"/>
+            <button
+                {% if user.auditor.pk != version.reviewer_id %}disabled="disabled"{%endif%}
+                type="submit" class="btn btn-sm btn-primary" title="{% trans 'Publish as the new version of the document' %}">
+                {% icon 'send' %} {% trans 'Publish' %}
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</td>
+{% endblock %}
+
+{% block empty_message %}
+{% trans 'There are no documents waiting to be published' %}
+{% endblock %}

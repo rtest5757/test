@@ -1,0 +1,36 @@
+{% load bootstrap3 %}
+{% load i18n %}
+{% load js %}
+
+<!-- Share document form intended to be loaded into the dialog via htmx -->
+<form id="share-document-form" hx-vals='{"_action": "share"}' hx-post="" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' method="post" hx-encoding="multipart/form-data" hx-target="#share-document-form" hx-swap="outerHTML">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    <button type="button" class="btn btn-primary shadowed" data-dismiss="modal">{% icon 'remove' %}<span>{% trans 'Cancel' %}</span></button>
+    {% bootstrap_button _('Save') button_class='btn-success' icon='ok' button_type='submit' %}
+    {{ form.media }}
+    <script>
+        var dialog = $('#meg-dialog');
+        dialog.find('.modal-title').text('{% trans "Share document" %}');
+        ['button#btn-danger', 'button#btn-primary', 'button#btn-success'].forEach(function (selector) {
+            dialog.find(selector).hide();
+        })
+        dialog.modal();
+        htmx.onLoad(function(elt){
+            $('#id_teams').multiselect({
+                nonSelectedText: gettext('Select Teams'),
+                enableCaseInsensitiveFiltering: true,
+                includeSelectAllOption: true,
+            });
+            $('#id_users').multiselect({
+                nonSelectedText: gettext('Select Users'),
+                enableCaseInsensitiveFiltering: true,
+                includeSelectAllOption: true,
+            });
+        })
+    </script>
+</form>
+{% include 'includes/toast_status_message.html' %}
+{% if status_message %}
+    <script>$('#meg-dialog').modal('hide');toastStatus()</script>
+{% endif %}

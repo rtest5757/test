@@ -1,0 +1,71 @@
+{% extends 'document_base.html' %}
+{% load bootstrap3 %}
+{% load i18n %}
+{% load static %}
+{% load js %}
+
+{% block content %}
+    {{ block.super }}
+    <section class="documents">
+        <section class="content-header document-info-section">
+            <img class="document-type" src="{% static 'images/document_icons/pdf.svg' %}">
+            <div class="document-info">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        {% url 'docs:manage:doc-list' institution_slug=institution.slug as document_list_url %}
+                        <li class="breadcrumb-item"><a href="{{ document_list_url }}">{% trans 'Manage Documents' %}</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{% trans 'Upload' %}</li>
+                    </ol>
+                </nav>
+                <div class="document-title">{% trans 'Upload Documents' %}</div>
+            </div>
+        </section>
+        <form action="" method="post" enctype="multipart/form-data">
+            <section class="document-upload">
+                {% csrf_token %}
+                <div class="card document-files">
+                    {% bootstrap_field form.folder form_group_class='form-group folder' label_class='folder' %}
+                    {% bootstrap_field form.category %}
+                    {% if form.errors.document_files %}
+                        {% bootstrap_field form.document_files show_help=False %}
+                    {% else %}
+                        {% bootstrap_field form.document_files %}
+                    {% endif %}
+                    {% bootstrap_field form.source_file %}
+                    {% bootstrap_field form.single_document %}
+                    <a class="btn btn-primary" href="{{ document_list_url }}">{% icon 'remove' %} {% trans 'Cancel' %}</a>
+                    {% bootstrap_button _('Upload') button_type='submit' button_class='btn-success' icon='cloud-upload' name='save' value='upload-documents' %}
+                </div>
+                <aside class="card document-info" style="height: auto">
+                    <h4 class="mobile">{% trans 'Additional settings' %}</h4>
+                    {% for field in form %}
+                        {% if field.name in form.additional_settings %}
+                            {% bootstrap_field field %}
+                        {% endif %}
+                    {% endfor %}
+                    <hr>
+                    <button type="button" class="btn btn-secondary" data-toggle="collapse" data-target="#doc-upload-advanced">{% icon 'tasks' %} {% trans "Advanced" %}</button>
+                    <div id="doc-upload-advanced" class="collapse {% if form.errors %}in{% endif %}">
+                        {% for field in form %}
+                            {% if field.name in form.advanced_settings %}
+                                {% bootstrap_field field %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </aside>
+            </section>
+        </form>
+    </section>
+{% endblock %}
+
+{% block styles %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/megdocs.css' %}">
+    {{ form.media.css }}
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    {{ form.media.js }}
+    {% bootstrap_datepicker_script %}
+{% endblock %}

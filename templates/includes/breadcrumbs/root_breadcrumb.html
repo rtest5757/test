@@ -1,0 +1,6 @@
+{% load i18n %}
+
+{% url 'docs:manage:doc-list' institution_slug=institution.slug as manage_url %}
+{% url 'docs:view:doc-list' institution_slug=institution.slug as view_url %}
+
+<li class="breadcrumb-item"><a href="{% if manage %}{{ manage_url }}{% else %}{{ view_url }}{% endif %}">{% trans 'All Documents' %}</a></li>

@@ -1,0 +1,62 @@
+{% extends 'document_base.html' %}
+{% load megforms_extras %}
+{% load bootstrap3 %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+    <section class="documents">
+        {{ block.super }}
+        {% url 'docs:manage:doc-list' institution_slug=institution.slug as document_list_url %}
+        <section class="content-header document-info-section">
+            <img class="document-type" src="{% static 'images/document_icons/pdf.svg' %}">
+            <div class="document-info">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ document_list_url }}">{% trans 'Manage Documents' %}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        {% if form.instance.pk %}{% trans 'Update Folder Permission Rule' %}{% else %}{% trans 'Create Folder Permission Rule' %}{% endif %}
+                    </li>
+                </ol>
+                <div class="document-title">
+                    {% if form.instance.pk %}
+                        {% trans 'Folder Permission Rule' %}
+                    {% else %}
+                        {% trans 'Folder Permission Rule' %}
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+        <div class="card">
+            <form action="" method="post" id="create-folder-form">
+                <h4>{% if form.instance.pk %}{% trans 'Update Folder Permission Rule' %}{% else %}{% trans 'Create Folder Permission Rule' %}{% endif %}</h4>
+                {% bootstrap_form form %}
+                {% csrf_token %}
+                <a class="btn btn-primary shadowed" href="{{ document_list_url }}">{% icon 'remove' %} {% trans 'Cancel' %}</a>
+                {% if form.instance.pk and perms.megdocs.delete_folderpermissionrule %}
+                    {% blocktrans asvar message with name=form.instance.name %}Are you sure you want to delete "{{ name }}"?{% endblocktrans %}
+                    <button type="button" class="btn btn-danger shadowed" id="btn-delete-{{ object.pk }}">
+                        {% icon 'trash' %} {% trans 'Delete' %}
+                    </button>
+                    <script>
+                        $(document).ready(function() {$("#btn-delete-{{ object.pk }}").click(function() {showDialog(
+                            "{% blocktrans %}Delete Folder Permission Rule{% endblocktrans %}", "{{ message }}", null, BTN_CANCEL,
+                            btnRemove(function() {$('form#delete-folder-permission-rule').submit();})
+                        )});});
+                    </script>
+                {% endif %}
+                {% bootstrap_button _('Save') button_type='submit' button_class='btn-success' icon='ok' name='save' value='save-folder-permission-rule' %}
+            </form>
+            <form action="" method="post" id="delete-folder-permission-rule" class="hidden">
+                <!-- Hidden form that deletes object when submitted -->
+                {% csrf_token %}
+                <input type="hidden" name="save" value="remove">
+            </form>
+        </div>
+    </section>
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    {{ form.media }}
+    <script src="{% static 'js/sticky.js' %}?{{ REVISION }}"></script>
+{% endblock %}

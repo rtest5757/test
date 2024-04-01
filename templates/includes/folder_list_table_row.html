@@ -1,0 +1,80 @@
+{% load megforms_extras %}
+{% load i18n %}
+{% load static %}
+{% load megdocs %}
+
+{% if full_screen %}
+    {% url 'docs:view:doc-list-fullscreen' institution_slug=institution.slug folder=subfolder.pk as folder_url %}
+{% else %}
+    {% url 'docs:manage:doc-list' institution_slug=institution.slug folder=subfolder.pk as folder_url %}
+{% endif %}
+
+<tr class="folder-row">
+    <td></td>
+    <td class="column-content">
+        <div class="desktop">
+            <div class="document-title">
+                <a href="{{ folder_url }}">
+                    <img class="document-type" src="{% static 'images/document_icons/Icon-folder.svg' %}">
+                </a>
+            </div>
+        </div>
+        <div class="mobile">
+            <div class="document-info">
+                <div class="document-title">
+                    <a href="{{ folder_url }}">
+                        <img class="document-type" src="{% static 'images/document_icons/Icon-folder.svg' %}">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </td>
+    <td class="column-content">
+        <div class="desktop">
+            <div class="document-title">
+                <a href="{{ folder_url }}">
+                    <span>{{ subfolder.name }}</span>
+                </a>
+            </div>
+        </div>
+        <div class="mobile">
+            <div class="document-info">
+                <a class="folder-info-controller">{% icon 'chevron-down' %}</a>
+                <div class="document-title">
+                    <a href="{{ folder_url }}">
+                        <span>{{ subfolder.name }}</span>
+                    </a>
+                </div>
+                <div class="document-additional-info">
+                     <div class="dms-column document-reviewer">
+                        <div class="document-label">{% trans 'Owner' %}</div>
+                        <div class="document-value">{{ subfolder.owner }}</div>
+                    </div>
+                    {% if perms.megdocs.change_folder %}
+                        <div class="document-actions">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'docs:manage:folder-update' institution_slug=institution.slug pk=subfolder.pk %}" class="btn btn-default btn-sm" title="{% trans 'Edit properties of this folder' %}" data-toggle="tooltip" data-placement="bottom">{% icon 'edit' %}</a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </td>
+    {% if manage and not full_screen %}
+        <td class="{% if not subfolder.owner.user.is_active %}text-danger{% endif %}">{{ subfolder.owner }}</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        {% if perms.megdocs.change_folder %}
+            <td class="actions">
+                <div class="btn-group btn-group-sm">
+                    <a href="{% url 'docs:manage:folder-update' institution_slug=institution.slug pk=subfolder.pk %}" class="btn btn-default btn-sm" title="{% trans 'Edit properties of this folder' %}" data-toggle="tooltip" data-placement="bottom">{% icon 'edit' %}</a>
+                </div>
+            </td>
+        {% else %}
+            <td></td>
+        {% endif %}
+    {% endif %}
+</tr>

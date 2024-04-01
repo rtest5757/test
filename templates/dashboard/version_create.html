@@ -1,0 +1,33 @@
+{% extends 'document_base.html' %}
+{% load i18n %}
+{% load bootstrap3 %}
+{% load static %}
+
+{% block content %}
+    {{ block.super }}
+    <section class="documents">
+        <nav aria-label="breadcrumb" class="hide-block">
+            {% with true as new_version %}
+                {% include "includes/breadcrumbs/document_breadcrumbs.html" %}
+            {% endwith %}
+        </nav>
+        <section class="content-header document-info-section">
+            <img class="document-type" src="{{ document.icon }}">
+            <div class="document-info">
+                {% with True as new_version %}
+                    {% include "includes/breadcrumbs/document_breadcrumbs.html" %}
+                {% endwith %}
+                <div class="document-title">{{ document.name }}</div>
+                <div class="document-version">{% blocktrans %}Create revision {{ revision }}{% endblocktrans %}</div>
+            </div>
+        </section>
+        <article class="card dms-version-control">
+            <form class="form" method="post" action="" enctype="multipart/form-data">
+                {% bootstrap_form form %}
+                {% csrf_token %}
+                {% bootstrap_button _('Submit') button_type='submit' button_class='btn-success' icon='ok' name='save' value='save-version' %}
+                {{ form.media }}
+            </form>
+        </article>
+    </section>
+{% endblock %}

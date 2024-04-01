@@ -1,0 +1,29 @@
+{% load bootstrap3 %}
+{% load i18n %}
+{% load js %}
+
+<form id="decline-version-form" hx-post="" hx-vals='{"_action": "decline"}' hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' method="post" hx-encoding="multipart/form-data" hx-target="#decline-version-form" hx-swap="outerHTML">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    <button type="button" class="btn btn-primary shadowed" data-dismiss="modal">{% icon 'remove-circle' %} <span>{% trans 'Cancel' %}</span></button>
+    {% bootstrap_button _('Decline') button_class='btn-danger' icon='remove' button_type='submit' %}
+    {{ form.media }}
+    <script>
+        var dialog = $('#meg-dialog');
+        dialog.find('.modal-title').text('{% trans "Reason for declining this version" %}');
+        ['button#btn-danger', 'button#btn-primary', 'button#btn-success'].forEach(function (selector) {
+            dialog.find(selector).hide();
+        })
+        dialog.modal();
+    </script>
+</form>
+{% include 'includes/toast_status_message.html' %}
+{% if status_message %}
+    <script>
+        $('#meg-dialog').modal('hide');
+        toastStatus();
+        setTimeout(function(){
+            window.location.reload();
+        }, 250);
+    </script>
+{% endif %}

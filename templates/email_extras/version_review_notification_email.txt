@@ -1,0 +1,16 @@
+{% extends "email_extras/base.txt" %}
+{% load i18n %}
+
+{% block main %}
+{% blocktrans %}Dear {{ reviewer }},{% endblocktrans %}
+
+{% if email_context %}{{ email_context|linebreaks }}{% endif %}
+{% if document_name %}
+{% blocktrans %}{{ uploader }} has uploaded a new version of {{ document_name }} and assigned its approval to you. You can find the new version here:{% endblocktrans %}
+{% else %}
+{% blocktrans %}{{ uploader }} has uploaded new documents and assigned you as the approver. You can find the new documents here:{% endblocktrans %}
+{% endif %}
+{% for version_url in version_urls %}
+{{ version_url }}
+{% endfor %}
+{% endblock %}

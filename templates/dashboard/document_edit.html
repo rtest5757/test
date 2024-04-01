@@ -1,0 +1,122 @@
+{% extends 'document_base.html' %}
+{% load comments %}
+{% load bootstrap3 %}
+{% load i18n %}
+{% load megforms_extras %}
+{% load static %}
+{% load megdocs %}
+
+{% block content %}
+    {% if current_change_request %}
+        <div class="alert alert-warning alert-dismissable">
+            {% blocktrans with auditor=current_change_request.auditor %}User "{{auditor}}" currently has a change suggestion approved for this document.{% endblocktrans %}
+        </div>
+    {% endif %}
+    {{ block.super }}
+    <section class="documents">
+        <section class="content-header document-info-section">
+            <img class="document-type" src="{{ document.icon }}">
+            <div class="document-info">
+                {% include "includes/breadcrumbs/document_breadcrumbs.html" %}
+                <div class="document-title">{{ document.name }}</div>
+                <div class="document-version">{% blocktrans %}Last Published:{% endblocktrans %} {{ document.current_version.created.date|default:_('Awaiting initial publishing') }}</div>
+            </div>
+        </section>
+        <section class="header-toolbar">
+            {% include 'dashboard/toolbar.html' %}
+        </section>
+        <section class="document-preview-edit">
+            {% if version %}
+                {% include 'includes/document_embed.html' with version=version %}
+            {% else %}
+                {% blocktrans %}Document contents will display here once a version is created.{% endblocktrans %}
+            {% endif %}
+            <div class="card document-edit">
+                <ul class="nav nav-tabs">
+                    <li role="presentation" class="active"><a data-toggle="tab" href="#info">{% trans 'Info' %}</a></li>
+                    <li role="presentation"><a data-toggle="tab" href="#checkbox">{% trans 'Checkbox' %}</a></li>
+                    <li role="presentation"><a data-toggle="tab" href="#version">{% trans 'Version' %}</a></li>
+                    <li role="presentation"><a data-toggle="tab" href="#comments">{% trans 'Comments' %}</a></li>
+                </ul>
+                <form class="form tab-content" method="post" action="">
+                    <div role="tabpanel" class="tab-pane active" id="info">
+                        {% for layout, grouped_fields in form.field_groups %}
+                            {% if grouped_fields == 'links' %}
+                                {% if perms.megdocs.change_documentlink %}
+                                    {% include "includes/document_links_modify.html" %}
+                                {% endif %}
+                            {% elif layout == form.INLINE %}
+                                <div class="form-inline">
+                                    {% for field in form %}
+                                        {% if field.name in grouped_fields %}{% bootstrap_field field show_help=False %}{% endif %}
+                                    {% endfor %}
+                                </div>
+                            {% elif layout == form.PARAGRAPH %}
+                                {% for field in form %}
+                                    {% if field.name in grouped_fields %}{% bootstrap_field field %}{% endif %}
+                                {% endfor %}
+                            {% endif %}
+                            <hr/>
+                        {% endfor %}
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="checkbox">
+                        {# Document Checkbox section #}
+                        <label style="display: block;">{% trans 'Checkbox' %}:</label>
+                        {% render_document_checked_users document.current_version %}
+                        {% bootstrap_formset checkbox_formset layout='horizontal' %}
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="version">
+                        <ul class="list-group">
+                            {% for v in versions %}
+                                <li class="list-group-item {% if v == version %}active{% endif %} {% if v.pk == document.current_version_id %}list-group-item-default{% endif %}">
+                                    {% if v.approved %}
+                                        <span class="{% icon_css_class 'ok' %} text-success pull-right" title="{% blocktrans %}Approved version{% endblocktrans %}"></span>
+                                    {% endif %}
+                                    <span class="badge">v{{ v.version }}</span>
+                                    {% if v.pk == document.current_version_id %} <span class="badge published">{% trans 'published' %}</span> {% endif %}
+                                    <a href="{% url 'docs:manage:doc-edit' institution_slug=institution.slug pk=document.pk revision=v.revision %}">{{ v.created }}</a>
+                                    <span class="truncate lines-1 v-summary">{% if v.summary %} {{ v.summary }}{% endif %}</span>
+                                </li>
+                            {% empty %}
+                                {% blocktrans %}This document does not currently have any versions.{% endblocktrans %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="comments">
+                        {% if document.current_version %}
+                            {% render_comments document.current_version show_add_comment=False %}
+                        {% endif %}
+                    </div>
+
+                    {% csrf_token %}
+                    <div class="btn-group mt10">
+                        {% if perms.megdocs.delete_document %}
+                            {% blocktrans asvar message with name=document %}Are you sure you want to remove "{{ name }}"? This will remove the entire document and all of its versions.{% endblocktrans %}
+                                <button type="button" class="btn btn-danger" id="btn-remove-document-{{ document.pk }}">{% icon 'trash' %} {% trans 'Remove' %}</button>
+                                <script>
+                                    $(document).ready(function() {$("#btn-remove-document-{{ document.pk }}").click(function() {showDialog(
+                                        "{% blocktrans %}Remove document{% endblocktrans %}", "{{ message }}", null, BTN_CANCEL,
+                                        btnRemove(function() {$('form#delete-form').submit();})
+                                    )});});
+                                </script>
+                        {% endif %}
+                        {% bootstrap_button _('Save') button_type='submit' button_class='btn-success' icon='ok' name='save' value='save-document' %}
+                        {% django_admin_link document classes='btn btn-default' %}
+                        {% audit_log_link document classes='btn btn-default' %}
+                    </div>
+                    {{ form.media }}
+                </form>
+                <form action="" method="post" id="delete-form" class="hidden">
+                    <!-- Hidden form that deletes object when submitted -->
+                    {% csrf_token %}
+                    <input type="hidden" name="save" value="remove">
+                </form>
+            </div>
+        </section>
+    </section>
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script src="{% static 'js/sortable-table-columns.js' %}?{{ REVISION }}"></script>
+{% endblock %}

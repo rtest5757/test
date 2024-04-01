@@ -1,0 +1,127 @@
+/*Stylesheet for all document views*/
+
+.col-tags {
+    max-width: 400pt;
+}
+
+.label {
+    margin-right: 1px;
+}
+
+.btn-group.document-btns {
+  margin: 20px 0 15px 0;
+  float: left;
+}
+
+#create-folder-form .multiselect-native-select .btn-group {
+	width: 100%;
+}
+
+#create-folder-form .multiselect.btn {
+	margin-bottom: 10px;
+	width: 100%;
+}
+
+.folder-user-perms {
+	margin-bottom: 20px;
+}
+
+.document-edit .multiselect.dropdown-toggle.btn.btn-default, .document-edit .multiselect-native-select > .btn-group {
+  width: 100%;
+}
+
+.document-acknowledgment-checkbox {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 2px 6px;
+  gap: 2px;
+  width: 150px;
+  height: 16px;
+  background: #FFFFFF;
+  border: 1px solid #F90B0D;
+  border-radius: 12px;
+}
+
+.ack-checkbox {
+  box-sizing: border-box;
+  width: 9px;
+  height: 9px;
+  border: 1px solid #F90B0D;
+  border-radius: 2px;
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+.ack-text-status {
+  width: 130px;
+  height: 12px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 10px;
+  line-height: 12px;
+  color: #F90B0D;
+  flex: none;
+  order: 1;
+  flex-grow: 0;
+}
+
+.document-acknowledged {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 2px 6px;
+  gap: 2px;
+  width: 90px;
+  height: 16px;
+  background: #78C5B0;
+  border-radius: 12px;
+}
+
+.ack-text {
+  width: 66px;
+  height: 12px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 10px;
+  line-height: 12px;
+  color: #FFFFFF;
+  flex: none;
+  order: 1;
+  flex-grow: 0;
+}
+
+.icon-ack {
+  width: 7px;
+  height: 10px;
+  color: white;
+}
+
+.checkbox-title {
+  font-weight: bold;
+  background: white;
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#sortable-checkbox-table th[sortable] .sort-checkbox-table-cell {
+  display: none;
+}
+
+#sortable-checkbox-table th[sortable]:hover .sort-checkbox-table-cell {
+  display: inline-block;
+  float: right;
+}
+
+#sortable-checkbox-table th[current-sort] .sort-checkbox-table-cell {
+  display: inline-block;
+  float: right;
+}
+
+.sort-checkbox-header {
+  cursor: pointer;
+}

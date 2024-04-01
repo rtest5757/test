@@ -1,0 +1,237 @@
+{% extends 'document_base.html' %}
+{% load i18n %}
+{% load bootstrap3 %}
+{% load static %}
+{% load files %}
+{% load megforms_extras %}
+{% load comments %}
+
+{% block content %}
+    {% if approval_config.is_declined %}
+        <div class="alert alert-warning mt10" role="alert">
+            <h5>
+                {% blocktrans with user=approval_config.declined_by.reviewer datetime=approval_config.declined_by.created %}Declined by {{ user }} on {{ datetime }}{% endblocktrans %}
+            </h5>
+            <h5 class="capitalize">{% trans 'Decline reason' %}</h5>
+            <p>{{ approval_config.declined_by.reason|linebreaksbr }}</p>
+        </div>
+    {% endif %}
+    <section class="documents">
+        <section class="content-header document-info-section">
+            <img class="document-type" src="{{ document.icon }}">
+            <div class="document-info">
+                <div class="controller">
+                    {% if not version.published %}
+                    <form action="" method="post" class="inline">
+                        {% csrf_token %}
+                        <div class="btn-group">
+                            {% if can_re_upload %}
+                                <a id="re-upload-version" hx-get hx-vals='{"_action": "re-upload"}' hx-target="#meg-dialog .modal-body" hx-swap="innerHTML" hx-trigger="click" class="btn btn-primary">
+                                    {% icon 'upload' %} {% trans 'Re-upload' %}
+                                </a>
+                            {% endif %}
+                            {% if can_approve_or_decline %}
+                                {% if user_approved %}
+                                    {% bootstrap_button _('Revoke approval') name="approve" value="false" title=approve_label button_class='btn-danger' icon='remove' button_type='submit' %}
+                                {% else %}
+                                {% bootstrap_button _('Approve') name="approve" value="true" button_class='btn-success' icon='ok' button_type='submit' %}
+                                <a id="decline-version" hx-get hx-vals='{"_action": "decline"}' hx-target="#meg-dialog .modal-body" hx-swap="innerHTML" hx-trigger="click" class="btn btn-danger">
+                                    {% icon 'remove' %} {% trans 'decline' %}
+                                </a>
+                                {% endif %}
+                            {% endif %}
+                            {% if can_publish %}
+                            {% bootstrap_button _('Publish') name="publish" value="true" title=_('Publish as the new version of the document') button_class='btn-primary' icon='send' button_type='submit' %}
+                            {% endif %}
+                        </div>
+                    </form>
+                    {% else %}
+                        <p>{% trans 'This version is already published' %}</p>
+                        <a href="{% url 'docs:manage:version-create' institution_slug=institution.slug pk=document.pk %}" class="btn btn-default">{% icon 'plus' %} {% trans 'New version' %}</a>
+                        {% if allow_mark_reviewed %}
+                            {% blocktrans asvar message with document=document revision=version.version %}Are you sure you want to mark this version {{ revision }} of {{ document }} as reviewed?{% endblocktrans %}
+                            <button type="button" class="btn btn-success" id="btn-review-{{ object.pk }}">{% icon 'ok' %} {% trans 'Mark Reviewed' %}</button>
+                            <form action="" method="post" id="mark-reviewed-form" style="display: none">
+                                <!-- Hidden form that marks version as reviewed when submitted -->
+                                {% csrf_token %}
+                                <input type="hidden" name="save" value="mark-reviewed">
+                            </form>
+                            <script>
+                                $(document).ready(function() {$("#btn-review-{{ object.pk }}").click(function() {showDialog(
+                                    "{% blocktrans %}Mark Reviewed{% endblocktrans %}", "{{ message }}", null,
+                                    btnSave(function() {$('form#mark-reviewed-form').submit();}),
+                                    BTN_CANCEL
+                                )});});
+                            </script>
+                        {% endif %}
+                    {% endif %}
+                    <div class="btn-group admin-controls">
+                        {% django_admin_link version classes='btn btn-default' %}
+                        {% audit_log_link version classes='btn btn-default' %}
+                    </div>
+                </div>
+                <div class="left">
+                    {% with True as review %}
+                        {% include "includes/breadcrumbs/document_breadcrumbs.html" %}
+                    {% endwith %}
+                    <div class="document-title">{{ version }}</div>
+                    <div class="document-info-block">
+                        {% if perms.megdocs.change_document %}
+                            {% url 'docs:manage:doc-edit' institution_slug=institution.slug pk=document.pk as document_url %}
+                        {% else %}
+                            {% url 'docs:view:doc-detail' institution_slug=institution.slug pk=document.pk as document_url %}
+                        {% endif %}
+                        <span class="document-info-block-element">{% blocktrans %}Document:{% endblocktrans %} <a class="strong" href="{{ document_url }}">{{ document }}</a></span>
+                        <span class="document-info-block-element">{% blocktrans with version=version.version %}Version: <strong>{{ version }}</strong>{% endblocktrans %}</span>
+                        <span class="document-info-block-element">{% blocktrans with uploader=version.creator %}Uploaded by: <strong>{{ uploader }}</strong>{% endblocktrans %}</span>
+                        <span class="document-info-block-element">{% blocktrans with date=version.created|date %}Reviewed: <strong>{{ date }}</strong>{% endblocktrans %}</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="card reviewer">
+            {% if can_edit %}
+                <form action="" method="post">
+                    {% csrf_token %}
+                    {% bootstrap_button _('Save') button_class='btn-primary' icon='ok' button_type='submit' %}
+                    {% bootstrap_form change_form %}
+                </form>
+            {% else %}
+                <h2>{% blocktrans with reviewer=version.reviewer %}Approver: {{ reviewer }}{% endblocktrans %}</h2>
+            {% endif %}
+        </div>
+        <div class="tabs tabbed-left">
+            {% if version != document.current_version %}
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#single" aria-controls="single" role="tab" data-toggle="tab">{% trans 'Proposed version' %}</a></li>
+                {% if document.current_version %}
+                    <li role="presentation"><a href="#compare" aria-controls="compare" role="tab" data-toggle="tab" class="tab-view-compare">{% trans 'Compare' %}</a></li>
+                    <li role="presentation"><a href="#diff" aria-controls="diff" role="tab" data-toggle="tab" id="tab-diff">{% trans 'Differences' %}</a></li>
+                {% endif %}
+            </ul>
+            {% endif %}
+        </div>
+        <section class="document-review">
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="single">
+                    {% include 'includes/document_embed.html' with version=version %}
+                </div>
+                <div role="tabpanel" class="tab-pane" id="compare">
+                    {% if document.current_version %}
+                    <div class="view-compare" id="current-version">
+                        <h2>{% blocktrans with version=document.current_version.version %}Current version: {{ version }}{% endblocktrans %}</h2>
+                        {% include 'includes/document_embed.html' with version=document.current_version %}
+                    </div>
+                    {% endif %}
+                    <div class="view-compare" id="proposed-version">
+                        <h2>{% blocktrans with version=version.version %}Proposed version: {{ version }}{% endblocktrans %}</h2>
+                        {% include 'includes/document_embed.html' with version=version %}
+                    </div>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="diff" style="height: auto">
+                    {% if version.can_show_diff and document.current_version.can_show_diff %}
+                    <div id="current-content" data-label="{{ document.current_version.version }}" style="display: none">{{ document.current_version.content|linebreaks }}</div>
+                    <div id="proposed-content" data-label="{{ version.version }}" style="display: none">{{ version.content|linebreaks }}</div>
+                    <div id="content-diff"></div>
+                    {% elif not document.current_version.content %}
+                        {% blocktrans %}The difference view can not be rendered as the text content of the document is not available.{% endblocktrans %}
+                    {% elif not version.content %}
+                        {% blocktrans %}Difference view is not currently available. If the document was uploaded recently, try refreshing the page.{% endblocktrans %}
+                    {% elif not document.is_pdf %}
+                        {% blocktrans %}Difference view is only available for pdf documents.{% endblocktrans %}
+                    {% else %}
+                        {% blocktrans %}Cannot show differences between the two version because the document is too large.{% endblocktrans %}
+                    {% endif %}
+                </div>
+                <article class="card document-comment">
+                    <div class="version-approval-summary">
+                        <h1>{% blocktrans %}Approval summary{% endblocktrans %}</h1>
+                        {% if approval_config.number_of_steps > 1 %}
+                            <h2>{{ approval_config }}</h2>
+                        {% endif %}
+                        <div>{% blocktrans %}Required approvals{% endblocktrans %}: <strong>{{ approval_config.required_approvals }}</strong></div>
+                        <div>{% blocktrans %}Current approvals{% endblocktrans %}: <strong>{{ approval_config.approvals.count }}</strong></div>
+                        {% if approval_config.declined_by %}
+                        <div>
+                            <h2>{% blocktrans %}Declined by{% endblocktrans %}</h2>
+                            <div class="document-links section-approvals">
+                                <div class="flexed-row link-row">
+                                    <strong>{{ approval_config.declined_by.reviewer }}</strong><small>{{ approval_config.declined_by.created }}</small>
+                                </div>
+                                <div class="link-row">
+                                    <h5 class="capitalize mb10">{% trans 'Decline reason' %}</h5>
+                                    <p class="mb0">{{ approval_config.declined_by.reason|linebreaksbr }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if approval_config.approvals %}
+                            <h2>{% blocktrans %}Approved by{% endblocktrans %}</h2>
+                            <div class="document-links section-approvals">
+                            {% for approver in approval_config.approvals %}
+                                <div class="flexed-row link-row">
+                                    <strong>{{ approver.reviewer }}</strong><small>{{ approver.created }}</small>
+                                </div>
+                                {% if approver.reviewer.signature %}
+                                <div class="flexed-row link-row" style="margin-bottom: 16px;">
+                                   <img style="width: auto; max-width: 100%; height: 100px" src="{{ approver.reviewer.signature.image_url }}"/>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                            </div>
+                        {% endif %}
+                        {% if approval_config.not_approved_by %}<h2>{% blocktrans %}Yet to be approved by{% endblocktrans %}</h2>{% endif %}
+                        {% for pending in approval_config.not_approved_by %}
+                            <div><strong>{{ pending }}</strong></div>
+                        {% endfor %}
+                    </div>
+                    {% render_comments version show_add_comment=show_add_comment %}
+                </article>
+            </div>
+        </section>
+    </section>
+{% endblock %}
+
+{% block styles %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static 'vendor/diff2html/diff2html.min.css' %}" />
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script src="{% static 'vendor/diff/diff.min.js' %}"></script>
+    <script src="{% static 'vendor/diff2html/diff2html.min.js' %}" ></script>
+    <script src="{% static 'vendor/diff2html/diff2html-ui-slim.min.js' %}"></script>
+    <script>
+        $('a#tab-diff').one('shown.bs.tab', function (e) {
+            var targetElement = document.getElementById('content-diff');
+
+            var diff = Diff.createTwoFilesPatch(
+                $('#current-content').data('label'),
+                $('#proposed-content').data('label'),
+                $('#current-content').text(),
+                $('#proposed-content').text()
+            );
+
+            var diff2htmlUi = new Diff2HtmlUI(targetElement, diff, {
+                drawFileList: false,
+                showFiles: false,
+                inputFormat: 'diff',
+                matching: 'lines',
+                fileListToggle: false,
+                fileContentToggle: false,
+            });
+            diff2htmlUi.draw();
+        });
+
+        $(document).ready(function () {
+            $(document.body).on('click', '.nav.nav-tabs li a', function(){
+                if( $(this).hasClass('tab-view-compare')) {
+                    $('.document-review .document-comment').hide();
+                }else{
+                    $('.document-review .document-comment').show();
+                }
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% load megforms_extras %}
+{% load i18n %}
+{% load static %}
+{% load megdocs %}
+
+<tr>
+    <td class="column-bookmark">
+        {% bookmark_button document %}
+    </td>
+    <td class="document-type">
+        {% if change_request and change_request.is_new %}
+            <img class="document-type opa-50" src="{% static 'images/document_icons/text.svg' %}">
+        {% elif not document.is_archived and document.current_version %}
+            <a href="{% url 'docs:manage:doc-detail' institution_slug=document.institution.slug pk=document.pk %}"><img class="document-type" src="{{document.icon}}"></a>
+        {% else %}
+            <img class="document-type opa-50" src="{{document.icon}}">
+        {% endif %}
+    </td>
+    <td class="column-content">
+        {% if full_screen and document.current_version.file %}
+            {% firstof document.current_version.file|pdf_viewer_url as document_url %}
+        {% elif not full_screen %}
+            {% url 'docs:manage:doc-detail' institution_slug=institution.slug pk=document.pk as document_url %}
+        {% endif %}
+        <div class="desktop">
+            {% if not document and change_request %}
+                <div class="document-title"><a href="{{ document_url }}">{{ change_request.description|truncatechars:128 }}</a></div>
+                <div class="document-description">{{ change_request.reason|truncatechars:200 }}</div>
+            {% elif not document.is_archived and document.current_version %}
+                <div class="document-title"><a href="{{ document_url }}">{{ document.name }}</a></div>
+                <div class="document-description">{{ document.description|truncatechars:200 }}</div>
+            {% else %}
+                <div class="document-title">{{ document.name }}</div>
+                <div class="document-description">{{ document.description|truncatechars:200 }}</div>
+            {% endif %}
+            {% include './acknowledgment_checkbox_status.html' %}
+        </div>
+        <div class="mobile">
+            <div class="bookmark-controller">{% bookmark_button document %}</div>
+            {% if change_request and change_request.is_new %}
+                <div class="document-title"><a href="{{ document_url }}">{{ change_request.description|truncatechars:128 }}</a></div>
+                <div class="document-description">{{ change_request.reason|truncatechars:200 }}</div>
+            {% elif not document.is_archived and document.current_version %}
+                <div class="document-title"><a href="{{ document_url }}">{{ document.name }}</a></div>
+                <div class="document-description">{{ document.description|truncatechars:200 }}</div>
+            {% else %}
+                <div class="document-title">{{ document.name }}</div>
+                <div class="document-description">{{ document.description|truncatechars:200 }}</div>
+            {% endif %}
+            {% include './acknowledgment_checkbox_status.html' %}
+            {% if manage and not full_screen %}
+            <div class="document-info">
+                <a class="document-info-controller">{% icon 'chevron-down' %}</a>
+                <div class="document-author">
+                    {% if change_request.owner %}
+                        {{ document.owner }}
+                    {% else %}
+                        {{ change_request.owner }}
+                    {% endif %}
+                </div>
+                <div class="document-last-update">{{ document.current_version.created.date|default:NULL_PLACEHOLDER }}</div>
+                <div class="document-additional-info">
+                    <div class="dms-column document-verion">
+                        <div class="document-label">{% trans 'Version' %}</div>
+                        <div class="document-value">
+                            {{ document.current_version.version|default:NULL_PLACEHOLDER }}
+                            {% with document.latest_versions.0 as latest_version %}
+                                {% if latest_version and document.current_version and latest_version != document.current_version %}
+                                    <span class="text-muted version-review">{% blocktrans with revision=latest_version.version %}({{ revision }} pending){% endblocktrans %}</span>
+                                {% else %}
+                                    {% if document.is_due_review %}
+                                        <span class="{% icon_css_class 'exclamation-sign' %} text-warning" data-toggle="tooltip" title="{% blocktrans with review_date=document.review_date %}Due for review on {{ review_date }}{% endblocktrans %}"></span>
+                                    {% endif %}
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                    <div class="dms-column document-reviewer">
+                        <div class="document-label">{% trans 'Reviewer' %}</div>
+                        <div class="document-value">{{ document.current_version.reviewer }}</div>
+                    </div>
+                    <div class="dms-column document-next-review">
+                        <div class="document-label">{% trans 'Next review' %}</div>
+                        <div class="document-value">{% render_due_date document.current_version.review_date %}</div>
+                    </div>
+                    {% if actions_template %}
+                        {% include actions_template with mobile=True %}
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </td>
+    {% if manage and not full_screen %}
+        <td class="nowrap">
+            {{ document.current_version.version|default:NULL_PLACEHOLDER }}
+            {% with document.latest_versions.0 as latest_version %}
+                {% if latest_version and document.current_version and latest_version != document.current_version %}
+                    <span class="text-muted version-review">{% blocktrans with revision=latest_version.version %}({{ revision }} pending){% endblocktrans %}</span>
+                {% else %}
+                    {% if document.is_due_review %}
+                        <span class="{% icon_css_class 'exclamation-sign' %} text-warning" data-toggle="tooltip" title="{% blocktrans with review_date=document.review_date %}Due for review on {{ review_date }}{% endblocktrans %}"></span>
+                    {% endif %}
+                {% endif %}
+            {% endwith %}
+        </td>
+        <td class="nowrap">{{ document.current_version.created.date|default:NULL_PLACEHOLDER }}</td>
+        {% if change_request.owner %}
+            <td class="{% if not change_request.owner.user.is_active %}text-danger{% endif %}">{{ change_request.owner }}</td>
+        {% else %}
+            <td class="{% if not document.owner.user.is_active %}text-danger{% endif %}">{{ document.owner }}</td>
+        {% endif %}
+        {% if not change_request %}
+        <td>{{ document.current_version.reviewer }}</td>
+        <td>{% render_due_date document.current_version.review_date %}</td>
+        {% endif %}
+    {% endif %}
+    {% if change_request %}
+        <td>{{ change_request.get_type_display }}</td>
+        <td>{{ change_request.auditor }}</td>
+        <td>{{ change_request.created }}</td>
+        <td>{{ change_request.get_status_display }}</td>
+    {% endif %}
+    {% if actions_template %}
+        {% include actions_template %}
+    {% elif manage and not full_screen %}
+        {% if perms.megdocs.change_document %}
+        <td class="actions">
+            <div class="btn-group btn-group-sm">
+                <a href="{% url 'docs:manage:doc-edit' institution_slug=document.institution.slug pk=document.pk %}" class="btn btn-default btn-sm" title="{% trans 'Edit properties of this document' %}" data-toggle="tooltip" data-placement="bottom">{% icon 'edit' %}</a>
+                <a href="{% url 'docs:manage:version-create' institution_slug=document.institution.slug pk=document.pk %}" class="btn btn-default btn-sm" title="{% trans 'Create a new version of this document' %}" data-toggle="tooltip" data-placement="bottom">{% icon 'plus' %}</a>
+            </div>
+        </td>
+        {% endif %}
+    {% endif %}
+</tr>

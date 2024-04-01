@@ -1,0 +1,13 @@
+{% extends 'email_extras/base.txt' %}
+{% load i18n %}
+
+{% block main %}
+{% blocktrans with username=auditor %}Dear {{ username }},{% endblocktrans %}
+
+{% blocktrans %}You are receiving this email because a document "{{ document }}" is due for review in 30 days on {{ review_date }}. Please make the necessary plans to review this document in a timely manner.{% endblocktrans %}
+
+{{ new_version_url }}
+
+{% blocktrans %}Current version of the document can be viewed under the following url:{% endblocktrans %}
+{{ document_url }}
+{% endblock %}

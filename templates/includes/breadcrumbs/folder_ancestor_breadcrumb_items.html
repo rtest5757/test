@@ -1,0 +1,7 @@
+{% if folder.pk %}
+    {% for ancestor in folder.get_ancestors %}
+        {% with ancestor as folder %}
+            {% include "includes/breadcrumbs/folder_breadcrumb_item.html" %}
+        {% endwith %}
+    {% endfor %}
+{% endif %}

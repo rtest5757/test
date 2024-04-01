@@ -1,0 +1,38 @@
+{% load bootstrap3 %}
+{% load i18n %}
+{% load js %}
+
+<form id="re-upload-version-form" hx-post="" hx-vals='{"_action": "re-upload"}' hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' method="post" hx-encoding="multipart/form-data" hx-target="#re-upload-version-form" hx-swap="outerHTML">
+    <div>
+        <h5>
+            {% blocktrans with user=declined_by.reviewer datetime=declined_by.created %}Declined by {{ user }} on {{ datetime }}{% endblocktrans %}
+        </h5>
+    </div>
+    <div>
+        <h5 class="capitalize">{% trans 'Decline reason' %}</h5>
+        <p>{{ declined_by.reason|linebreaksbr }}</p>
+    </div>
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    <button type="button" class="btn btn-danger shadowed" data-dismiss="modal">{% icon 'remove' %}<span>{% trans 'Cancel' %}</span></button>
+    {% bootstrap_button _('Upload') button_class='btn-success' icon='ok' button_type='submit' %}
+    {{ form.media }}
+    <script>
+        var dialog = $('#meg-dialog');
+        dialog.find('.modal-title').text("{% trans "Re-upload version and send back to review" %}");
+        ['button#btn-danger', 'button#btn-primary', 'button#btn-success'].forEach(function (selector) {
+            dialog.find(selector).hide();
+        })
+        dialog.modal();
+    </script>
+</form>
+{% include 'includes/toast_status_message.html' %}
+{% if status_message %}
+    <script>
+        $('#meg-dialog').modal('hide');
+        toastStatus();
+        setTimeout(function(){
+            window.location.reload();
+        }, 250);
+    </script>
+{% endif %}

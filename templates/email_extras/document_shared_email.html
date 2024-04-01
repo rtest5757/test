@@ -1,0 +1,20 @@
+{% extends 'email_extras/email_base.html' %}
+{% load i18n %}
+
+{% block main %}
+    <p>{% blocktrans %}Dear {{ user }},{% endblocktrans %}</p>
+    <p>{% blocktrans with shared_by=shared_by document_title=document.name %}{{ shared_by }} has shared a new document with you titled {{ document_title }}.{% endblocktrans %}</p>
+    <hr style="border:1px solid #ececec"/>
+    <div class="meg-email-border-block" style="box-sizing:border-box; margin-top: 20px; display: block; text-align:left; width: 90%;  border: 1px solid #ececec; padding: 20px; background-color: #ffffff;">
+        {% if requires_ack %}
+            <p>{% trans 'When you read this document, you will be required to acknowledge that you have read it by ticking the acknowledgement checkbox.' %}</p>
+        {% endif %}
+
+        <p style="margin-top:10px;">
+            <a href="{{ document_url }}" class="meg-email-btn-orange" style="display: block; padding: 5px 8px; text-align:center; background-color: #FF7A59; border-radius:4px; color: #ffffff; text-decoration: none; max-width: 300px;">
+                {% trans 'View document' %}
+            </a>
+        </p>
+    </div>
+{% endblock %}
+

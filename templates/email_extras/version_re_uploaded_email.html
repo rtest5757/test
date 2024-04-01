@@ -1,0 +1,16 @@
+{% extends "email_extras/email_base.html" %}
+{% load i18n %}
+
+{% block main %}
+    {% firstof contributor.first_last_name contributor.user.username as contributor_name %}
+    {% firstof uploader.first_last_name uploader.user.username as uploader_name %}
+    {% blocktrans %}Dear {{ contributor_name }},{% endblocktrans %}<br />
+    {% if email_context %}{{ email_context|linebreaks }}<br />{% endif %}
+    {% blocktrans %}{{ uploader_name }} has uploaded a new file for {{ version }} and it was sent back for review.{% endblocktrans %}
+    <hr style="border:1px solid #ececec"/>
+    {% blocktrans %}This is a major change that requires your re-approval.{% endblocktrans %}
+    <p>{% blocktrans %}You can find the version here:{% endblocktrans %}</p>
+    {% for version_url in version_urls %}
+        <p><a class="meg-email-btn-orange" href="{{ version_url }}" style="display: block; padding: 5px 8px; text-align:center; background-color: #FF7A59; border-radius:4px; color: #ffffff; text-decoration: none;">{{ version_url }}</a></p>
+    {% endfor %}
+{% endblock %}

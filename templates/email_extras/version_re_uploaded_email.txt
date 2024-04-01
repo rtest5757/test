@@ -1,0 +1,16 @@
+{% extends "email_extras/email_base.html" %}
+{% load i18n %}
+
+{% block main %}
+{% firstof contributor.first_last_name contributor.user.username as contributor_name %}
+{% firstof uploader.first_last_name uploader.user.username as uploader_name %}
+{% blocktrans %}Dear {{ contributor_name }},{% endblocktrans %}
+
+{% if email_context %}{{ email_context|linebreaks }}{% endif %}
+{% blocktrans %}{{ uploader_name }} has uploaded a new file for {{ version }} and it was sent back for review.{% endblocktrans %}
+{% blocktrans %}This is a major change that requires your re-approval.{% endblocktrans %}
+{% blocktrans %}You can find the version here:{% endblocktrans %}
+{% for version_url in version_urls %}
+{{ version_url }}
+{% endfor %}
+{% endblock %}

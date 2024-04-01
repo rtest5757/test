@@ -1,0 +1,16 @@
+{% extends 'email_extras/email_base.html' %}
+{% load i18n %}
+{% load domain_url %}
+
+{% block main %}
+    {{ block.super }}
+    <p>{% blocktrans %}Dear MEG Docs user,{% endblocktrans %}</p>
+    <p>{% blocktrans %}This is to let you know that since {{ deactivated_auditor }} account has been deactivated, the following documents need to be reassigned to a new owner:{% endblocktrans %}</p>
+    <hr style="border:1px solid #ececec"/>
+    <ul>
+    {% for document in documents %}
+        {% url 'docs:manage:doc-edit' pk=document.pk institution_slug=institution.slug as url %}
+        <li><a href="{% domain_url %}{{url}}">{{ document }}</a></li>
+    {% endfor %}
+    </ul>
+{% endblock %}

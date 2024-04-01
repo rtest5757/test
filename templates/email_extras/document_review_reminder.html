@@ -1,0 +1,12 @@
+{% extends 'email_extras/email_base.html' %}
+{% load i18n %}
+
+{% block main %}
+    <p>{% blocktrans with username=owner %}Dear {{ username }},{% endblocktrans %}</p>
+    <p>{% blocktrans %}This is to remind you that {{ document }} is due for review as of today. A new version of the document can be uploaded by following the link below:{% endblocktrans %}</p>
+    <hr style="border:1px solid #ececec"/>
+    <p>
+        <a class="meg-email-btn-orange" style="margin: 5px;" href="{{ new_version_url }}">{% trans 'Create new version' %}</a>
+        <a class="meg-email-btn-orange" style="margin: 5px;" href="{{ document_url }}">{% trans 'View document' %}</a>
+    </p>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% load bootstrap3 %}
+
+<div class="dms-search">
+    <form class="form form-inline" action="{% url search_url institution_slug=institution.slug %}" method="get">
+        {% bootstrap_form folder_permission_rule_search_form layout='inline' %}
+        {% bootstrap_button _('Search') icon='search' button_class='btn-primary' %}
+        {{ folder_permission_rule_search_form.media }}
+    </form>
+</div>

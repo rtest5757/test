@@ -1,0 +1,86 @@
+{% extends 'document_base.html' %}
+{% load bootstrap3 %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+    <section class="documents">
+        <section class="header-toolbar">
+            {% include 'includes/header_toolbar_controller.html' %}
+
+            {% if full_screen %}
+                {% include 'dashboard/overview_filter.html' with search_url='docs:view:doc-list-fullscreen' %}
+            {% else %}
+                {% include 'dashboard/toolbar.html' %}
+                {% include 'dashboard/overview_filter.html' with search_url='docs:manage:doc-list' %}
+            {% endif %}
+        </section>
+        <section class="flex-container">
+            {% if full_screen %}
+                {% include 'includes/folder_tree.html' with folder_url='docs:view:doc-list-fullscreen' %}
+            {% else %}
+                {% include 'includes/folder_tree.html' with folder_url='docs:manage:doc-list' %}
+            {% endif %}
+            <article class="data-content with-aside">
+                <table class="table table-striped document-list">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th>{% trans 'Title' %}</th>
+                            {% if manage and not full_screen %}
+                                <th>{% trans 'Version' %}</th>
+                                <th>{% trans 'Version Updated' %}</th>
+                                <th>{% trans 'Owner' %}</th>
+                                <th>{% trans 'Approver' %}</th>
+                                <th>{% trans 'Next review' %}</th>
+                                {% if perms.megdocs.change_document %}
+                                <th>{% trans 'Action' %}</th>
+                                {% endif %}
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if bookmarks_only %}
+                            {% for document in bookmarked_documents %}
+                                {% include "includes/document_list_table_row.html" %}
+                            {% empty %}
+                                <tr>
+                                    <td colspan="9" class="text-danger mobile-show">{{ filter_form.no_results_message }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            {% if folder %}
+                                {% for subfolder in folder.immediate_sub_folders %}
+                                    {% include "includes/folder_list_table_row.html" %}
+                                {% endfor %}
+                            {% endif %}
+                            {% for document in document_list %}
+                                {% include "includes/document_list_table_row.html" %}
+                            {% empty %}
+                                <tr>
+                                    <td colspan="10" class="text-danger mobile-show">{{ filter_form.no_results_message }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+                {% bootstrap_pagination page_obj extra=request.GET.urlencode %}
+            </article>
+        </section>
+    </section>
+{% endblock %}
+
+{% block styles %}
+    {{ block.super }}
+    {% if full_screen %}
+        <link rel="stylesheet" href="{% static 'css/hide-borders.css' %}?{{ REVISION }}">
+        <style>
+            body{
+                width: 100%;
+                min-width: 100%;
+            }
+        </style>
+    {% endif %}
+    <link rel="stylesheet" href="{% static 'css/megdocs.css' %}?{{ REVISION }}">
+{% endblock %}

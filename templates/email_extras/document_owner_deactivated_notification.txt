@@ -1,0 +1,11 @@
+{% extends 'email_extras/base.txt' %}
+{% load i18n %}
+
+{% block main %}
+{{ block.super }}
+{% blocktrans %}Dear MEG Docs user,{% endblocktrans %}
+{% blocktrans %}This is to let you know that since {{ deactivated_auditor }} account has been deactivated, the following documents need to be reassigned to a new owner:{% endblocktrans %}
+{% for document in documents %}
+    - {{ document }}
+{% endfor %}
+{% endblock %}

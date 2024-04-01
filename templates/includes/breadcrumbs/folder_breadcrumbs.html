@@ -1,0 +1,14 @@
+{% load i18n %}
+
+{% if document.is_archived %}
+    <li class="breadcrumb-item"><a href="{% url 'docs:manage:doc-list-archived' institution_slug=institution.slug %}">{% trans 'Archived' %}</a></li>
+{% elif review %}
+    <li class="breadcrumb-item"><a href="{% url 'docs:manage:assigned-list' institution_slug=institution.slug %}">{% trans 'Review' %}</a></li>
+{% else %}
+    {% with document.folder as folder %}
+        {% if folder %}
+            {% include "includes/breadcrumbs/folder_ancestor_breadcrumb_items.html" %}
+            {% include "includes/breadcrumbs/folder_breadcrumb_item.html" %}
+        {% endif %}
+    {% endwith %}
+{% endif %}

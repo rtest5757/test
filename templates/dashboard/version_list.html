@@ -1,0 +1,88 @@
+{% extends 'document_base.html' %}
+{% load i18n %}
+{% load bootstrap3 %}
+{% load megforms_extras %}
+{% load static %}
+
+{% block content %}
+    <section class="documents">
+        <section class="header-toolbar">
+            {% include 'includes/header_toolbar_controller.html' %}
+            {% include 'dashboard/toolbar.html' %}
+            {% include 'dashboard/overview_filter.html' %}
+        </section>
+        {{ block.super }}
+        <section class="flex-container">
+            {% include 'includes/folder_tree.html' with doc_tab='manage' folder_url='docs:manage:doc-list' %}
+            <article class="data-content with-aside">
+                {% if show_review_tabs %}{% include 'includes/document-review-tabs.html' %}{% endif %}
+                <table class="table table-striped document-list">
+                    <thead>
+                        <tr>
+                            {% block list_columns %}
+                            <th></th>
+                            <th>{% trans 'Document' %}</th>
+                            <th>{% trans 'Creation date' %}</th>
+                            <th>{% trans 'Review date' %}</th>
+                            <th>{% trans 'Approver' %}</th>
+                            <th>{% trans 'Approval' %}</th>
+                            <th>{% trans 'Uploaded by' %}</th>
+                            {% endblock %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for version in version_list %}
+                        <tr>
+                            {% block list_rows %}
+                            <td class="document-type">
+                                <a href="{% url 'docs:manage:version-review' institution_slug=institution.slug pk=version.pk %}"><img class="document-type" src="{{ version.icon }}"></a>
+                            </td>
+                            <td class="column-content">
+                                <div class="desktop">
+                                    <div class="document-title"><a href="{% url 'docs:manage:version-review' institution_slug=institution.slug pk=version.pk %}">{{ version }}</a></div>
+                                </div>
+                                <div class="mobile">
+                                    <div class="document-title"><a href="{% url 'docs:manage:version-review' institution_slug=institution.slug pk=version.pk %}">{{ version }}</a></div>
+                                    <div class="document-info">
+                                        <a class="document-info-controller">{% icon 'chevron-down' %}</a>
+                                        <div class="document-author">{{ version.creator }}</div>
+                                        <div class="document-last-update">{{ version.created|date }}</div>
+                                        <div class="document-additional-info">
+                                            <div class="dms-column document-verion">
+                                                <div class="document-label">{% trans 'Creation date' %}</div>
+                                                <div class="document-value">{{ version.created|date }}</div>
+                                            </div>
+                                            <div class="dms-column document-reviewer">
+                                                <div class="document-label">{% trans 'Reviewer' %}</div>
+                                                <div class="document-value">{{ version.reviewer }}</div>
+                                            </div>
+                                            <div class="dms-column document-next-review">
+                                                <div class="document-label">{% trans 'Review date' %}</div>
+                                                <div class="document-value">{% render_due_date version.review_date %}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ version.created|date }}</td>
+                            <td>{% render_due_date version.review_date %}</td>
+                            <td>{{ version.reviewer }}</td>
+                            <td>{{ version.get_approval_display }}</td>
+                            <td>{{ version.creator }}</td>
+                            {% endblock %}
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-danger mobile-show">
+                                {% block empty_message %}
+                                    {% trans 'There are no documents awaiting approval' %}
+                                {% endblock %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </article>
+        </section>
+    </section>
+{% endblock %}

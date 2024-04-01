@@ -1,0 +1,13 @@
+{% extends 'email_extras/base.txt' %}
+{% load i18n %}
+
+{% block main %}
+{% blocktrans with username=owner %}Dear {{ username }},{% endblocktrans %}
+
+{% blocktrans %}This is to remind you that {{ document }} is due for review as of today. A new version of the document can be uploaded by following the link below:{% endblocktrans %}
+
+{{ new_version_url }}
+
+{% blocktrans %}Current version of the document can be viewed under the following url:{% endblocktrans %}
+{{ document_url }}
+{% endblock %}

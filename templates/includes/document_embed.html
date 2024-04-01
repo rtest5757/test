@@ -1,0 +1,18 @@
+{% load megforms_extras %}
+{% load i18n %}
+{% load pdf %}
+{% load files %}
+
+{% if version.is_pdf %}
+    <iframe src="{{ version.file|pdf_viewer_url }}" width="100%" height="700px" class="document-embed"></iframe>
+{% elif version.is_image %}
+    <div class="image-preview">{% render_field_image version.file %}</div>
+{% elif version is None %}
+    {% blocktrans %}Cannot load preview. Document version does not exist.{% endblocktrans %}
+{% else %}
+    <div class="block-message">
+        {% blocktrans with format=version.extension %}Cannot load preview for {{ format }} documents{% endblocktrans %}
+        <br>
+        <a href="{{ version.file_url }}" target="_blank" class="btn btn-primary">{% icon 'download-alt' %} {% trans 'Download' %}</a>
+    </div>
+{% endif %}

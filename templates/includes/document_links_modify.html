@@ -1,0 +1,23 @@
+{% load bootstrap3 %}
+{% load i18n %}
+
+<section id="document-links" class="document-links">
+    <label style="display: block;">{% trans 'Links' %}</label>
+    <div
+        id="document-links-list"
+        hx-get="{% url 'docs:manage:doc-link' institution_slug=institution.slug pk=document.pk %}"
+        hx-target="#document-links-list"
+        hx-trigger="documentLinkSuccess from:body"
+        >
+        {% include 'dashboard/list_document_link.html' with links=document.links.all.published %}
+    </div>
+    <a class="btn btn-primary" hx-get="{% url 'docs:manage:doc-link' institution_slug=institution.slug pk=document.pk %}" hx-target="#form-document-link-popup">
+        {% icon 'plus' %} {% trans 'Add link' %}
+    </a>
+</section>
+<div id="form-document-link-popup"></div>
+<script>
+    document.body.addEventListener('documentLinkSuccess', function() {
+        $('#form-document-link-popup').children('.modal').modal('hide')
+    });
+</script>

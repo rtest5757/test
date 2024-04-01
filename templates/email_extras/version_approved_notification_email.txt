@@ -1,0 +1,14 @@
+{% extends "email_extras/base.txt" %}
+{% load i18n %}
+
+{% block main %}
+{% firstof reviewer.user.first_name reviewer.username as reviewer_name %}
+{% blocktrans %}Dear {{ reviewer_name }},{% endblocktrans %}
+{% if email_context %}{{ email_context|linebreaks }}{% endif %}
+{% blocktrans %}The document version '{{ version }}' has been fully approved by the following users and is ready to be published:{% endblocktrans %}
+{{ approved_by|join:", " }}
+{% blocktrans %}You can view the version here:{% endblocktrans %}
+{% for version_url in version_urls %}
+{{ version_url }}
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends 'email_extras/email_base.html' %}
+{% load i18n %}
+
+{% block main %}
+    {% blocktrans %}Dear {{ user }},{% endblocktrans %}
+    {% blocktrans with shared_by=shared_by document_title=document.name %}{{ shared_by }} has shared a new document with you titled {{ document_title }}.{% endblocktrans %}
+    {% if requires_ack %}
+        {% trans 'When you read this document, you will be required to acknowledge that you have read it by ticking the acknowledgement checkbox.' %}
+    {% endif %}
+
+    {% blocktrans %}You can access the document by clicking here {{ document_url }}.{% endblocktrans %}
+{% endblock %}
+

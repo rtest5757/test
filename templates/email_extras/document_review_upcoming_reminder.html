@@ -1,0 +1,14 @@
+{% extends 'email_extras/email_base.html' %}
+{% load i18n %}
+
+{% block main %}
+    <p>{% blocktrans with username=auditor %}Dear {{ username }},{% endblocktrans %}</p>
+    <p>
+        {% blocktrans %}You are receiving this email because a document "{{ document }}" is due for review in 30 days on {{ review_date }}. Please make the necessary plans to review this document in a timely manner.{% endblocktrans %}
+    </p>
+    <hr style="border:1px solid #ececec"/>
+    <p>
+        <a class="meg-email-btn-orange" style="margin: 5px;" href="{{ new_version_url }}">{% trans 'Create new version' %}</a>
+        <a class="meg-email-btn-orange" style="margin: 5px;" href="{{ document_url }}">{% trans 'View document' %}</a>
+    </p>
+{% endblock %}

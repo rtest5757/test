@@ -1,0 +1,41 @@
+{% load megforms_extras %}
+{% load bootstrap3 %}
+{% load i18n %}
+{% load js %}
+
+<!-- Share document form intended to be loaded into the dialog via htmx -->
+<form id="change-request-document-form" hx-vals='{"_action": "change-request"}' hx-post="" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' method="post" hx-encoding="multipart/form-data" hx-target="#change-request-document-form" hx-swap="outerHTML">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    <div id="archive-alert" class="alert alert-warning" style="display: none">
+        {% trans 'Ticking this box will automatically archive this document when the suggestion is approved' %}
+    </div>
+    <button type="button" class="btn btn-primary shadowed" data-dismiss="modal">{% icon 'remove' %}<span>{% trans 'Cancel' %}</span></button>
+    {% bootstrap_button _('Save') button_class='btn-success' icon='ok' button_type='submit' %}
+    {{ form.media }}
+    <script>
+        var dialog = $('#meg-dialog');
+        dialog.find('.modal-title').text('{% trans "Suggest change" %}');
+        ['button#btn-danger', 'button#btn-primary', 'button#btn-success'].forEach(function (selector) {
+            dialog.find(selector).hide();
+        })
+        dialog.modal();
+        $(document).on('change', '#change-request-document-form input#id_is_archived', function(event) {
+            if (event.target.checked) {
+                $('#archive-alert').show();
+            } else {
+                $('#archive-alert').hide();
+            }
+        })
+    </script>
+</form>
+{% include 'includes/toast_status_message.html' %}
+{% if status_message %}
+    <script>
+        $('#meg-dialog').modal('hide');
+        toastStatus();
+        setTimeout(function () {
+            window.location.reload();
+        }, 250);
+    </script>
+{% endif %}

@@ -1,0 +1,11 @@
+{% extends "email_extras/base.txt" %}
+{% load i18n %}
+
+{% block main %}
+    {% firstof owner.user.first_name owner.username as owner_name %}
+    {% firstof editor.user.first_name editor.username as editor_name %}
+    {% blocktrans %}Dear {{ owner_name }},{% endblocktrans %}
+    {% if email_context %}{{ email_context|linebreaks }}{% endif %}
+    {% blocktrans %}{{ editor_name }} has made you the owner of {{ document_name }}. You can find the document here:{% endblocktrans %}
+    {{ document_url }}
+{% endblock %}

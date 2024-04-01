@@ -1,0 +1,4 @@
+{% url 'docs:manage:doc-edit' institution_slug=institution.slug pk=document.pk as manage_url %}
+{% url 'docs:view:doc-detail' institution_slug=institution.slug pk=document.pk as view_url %}
+
+<li class="breadcrumb-item"><a href="{% if perms.megdocs.change_document %}{{ manage_url }}{% else %}{{ view_url }}{% endif %}">{{ document.name }}</a></li>

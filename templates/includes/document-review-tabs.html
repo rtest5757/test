@@ -1,0 +1,22 @@
+{% load megforms_extras %}
+{% load i18n static %}
+
+<ul class="nav nav-tabs capitalize responsive-tabs mb0 with-icons" role="tablist">
+    <li role="presentation" class="{% if my_waiting_approval %}active{% endif %}">
+        <a class="doc-review-container" href="{% url 'docs:manage:assigned-list' institution_slug=institution.slug %}" role="tab">
+            {% icon 'duplicate' 'doc-review-icon' %}
+            <span class="capitalize">{% trans 'all reviews' %}</span>
+        </a>
+    </li>
+    <li role="presentation" class="{% if not my_waiting_approval %}active{% endif %} mr10">
+        <a class="doc-review-container" href="{% url 'docs:manage:user-assigned-list' institution_slug=institution.slug %}" role="tab">
+            {% icon 'file' 'doc-review-icon' %}
+            <span class="capitalize">{% trans 'my reviews' %}</span>
+        </a>
+    </li>
+</ul>
+
+{% block scripts %}
+    <script src="{% static 'js/responsive-tabs-functions.js' %}?{{ REVISION }}"></script>
+    <script src="{% static 'js/responsive-tabs.js' %}?{{ REVISION }}"></script>
+{% endblock %}

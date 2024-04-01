@@ -1,0 +1,3 @@
+<li {% if active %}class="breadcrumb-item active"  aria-current="page" {% else %}class="breadcrumb-item"{% endif %}>
+    <a href="{% url 'docs:manage:doc-list' institution_slug=institution.slug folder=folder.pk %}">{{ folder.name }}</a>
+</li>

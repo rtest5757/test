@@ -1,0 +1,15 @@
+{% extends "email_extras/email_base.html" %}
+{% load i18n %}
+
+{% block main %}
+    {% firstof reviewer.user.first_name reviewer.username as reviewer_name %}
+    {% blocktrans %}Dear {{ reviewer_name }},{% endblocktrans %}<br />
+    {% if email_context %}{{ email_context|linebreaks }}<br />{% endif %}
+    {% blocktrans %}The document version '{{ version }}' has been fully approved by the following users and is ready to be published:{% endblocktrans %}
+    {{ approved_by|join:", " }}
+    <hr style="border:1px solid #ececec"/>
+    {% blocktrans %}You can view the version here:{% endblocktrans %}
+    {% for version_url in version_urls %}
+        <p><a class="meg-email-btn-orange" href="{{ version_url }}" style="display: block; padding: 5px 8px; text-align:center; background-color: #FF7A59; border-radius:4px; color: #ffffff; text-decoration: none;">{{ version_url }}</a></p>
+    {% endfor %}
+{% endblock %}

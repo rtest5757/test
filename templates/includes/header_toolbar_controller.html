@@ -1,0 +1,21 @@
+{% load megforms_extras %}
+{% load i18n %}
+{% load static %}
+
+<div class="mobile">
+	<div class="document-search">
+		<form method="post" action="" class="form-inline mobile-search" id="search-form">
+			{% csrf_token %}
+			<input type="hidden" name="filter_form" value="">
+			<button class="btn btn-default btn-primary apply-btn" type="submit">{% icon 'search' %}</button>
+		</form>
+	</div>
+	<a class="header-toolbar-controller">
+		{% trans 'Document Tools' %}
+		{% icon 'chevron-down' %}
+	</a>
+</div>
+
+{% block scripts %}
+	<script src="{% static 'js/header-toolbar-controller.js' %}"></script>
+{% endblock %}

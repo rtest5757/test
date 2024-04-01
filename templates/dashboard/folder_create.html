@@ -1,0 +1,66 @@
+{% extends 'document_base.html' %}
+{% load megforms_extras %}
+{% load bootstrap3 %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+    <section class="documents">
+        {{ block.super }}
+        {% url 'docs:manage:doc-list' institution_slug=institution.slug as document_list_url %}
+        <section class="content-header document-info-section">
+            <img class="document-type" src="{% static 'images/document_icons/pdf.svg' %}">
+            <div class="document-info">
+                <ol class="breadcrumb">
+                    {% include "includes/breadcrumbs/root_breadcrumb.html" %}
+                    {% if form.instance.pk %}
+                        {% include "includes/breadcrumbs/folder_ancestor_breadcrumb_items.html" %}
+                        {% include "includes/breadcrumbs/folder_breadcrumb_item.html" %}
+                        <li class="breadcrumb-item active"  aria-current="page">{% trans 'Update' %}</li>
+                    {% else %}
+                        <li class="breadcrumb-item active"  aria-current="page">{% trans 'Create New Folder' %}</li>
+                    {% endif %}
+                </ol>
+                <div class="document-title">
+                    {% if form.instance.pk %}
+                        {% trans 'Document Management - Update Folder' %}
+                    {% else %}
+                        {% trans 'Document Management - Create Folder' %}
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+        <article class="card">
+            <form action="" method="post" id="create-folder-form">
+                <h4>{% if form.instance.pk %}{% trans 'Update Folder' %}{% else %}{% trans 'Create Folder' %}{% endif %}</h4>
+                {% bootstrap_form form %}
+                {% csrf_token %}
+                <a class="btn btn-primary shadowed" href="{{ document_list_url }}">{% icon 'remove' %} {% trans 'Cancel' %}</a>
+                {% if form.instance.pk and allow_delete %}
+                    {% blocktrans asvar message with name=form.instance.name %}Are you sure you want to delete "{{ name }}"?{% endblocktrans %}
+                    <button type="button" class="btn btn-danger shadowed" id="btn-delete-{{ object.pk }}">
+                        {% icon 'trash' %} {% trans 'Delete Folder' %}
+                    </button>
+                    <script>
+                        $(document).ready(function() {$("#btn-delete-{{ object.pk }}").click(function() {showDialog(
+                            "{% blocktrans %}Delete Folder{% endblocktrans %}", "{{ message }}", null, BTN_CANCEL,
+                            btnRemove(function() {$('form#delete-folder').submit();})
+                        )});});
+                    </script>
+                {% endif %}
+                {% bootstrap_button _('Save') button_type='submit' button_class='btn-success' icon='ok' name='save' value='save-folder' %}
+                {{ form.media }}
+            </form>
+            <form action="" method="post" id="delete-folder" class="hidden">
+                <!-- Hidden form that deletes object when submitted -->
+                {% csrf_token %}
+                <input type="hidden" name="save" value="remove">
+            </form>
+        </article>
+    </section>
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script src="{% static 'js/sticky.js' %}?{{ REVISION }}"></script>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% load megforms_extras %}
+{% load i18n %}
+{% load static %}
+{% load megdocs %}
+
+{% if mobile %}
+    <div class="document-actions">
+        <div class="btn-group btn-group-sm">
+            {% if perms.megdocs.add_documentchangerequest and not perms.megdocs.change_documentchangerequest and change_request.is_approved and change_request.auditor_id == request.user.auditor.pk and change_request.document.current_version.source %}
+                <a class="btn btn-primary btn-sm block" href="{{ change_request.document.current_version.source_file_url }}">
+                    {% icon 'download' %} {% trans 'Word Version' %}
+                </a></br>
+            {% endif %}
+            <a class="btn btn-sm btn-default block" hx-get hx-target="#meg-dialog .modal-body" hx-vals='{"change_request_id": {{change_request.id}} }' hx-swap="innerHTML" data-toggle="tooltip" data-placement="bottom" title="{% trans 'View' %}" >
+                {% if perms.megdocs.add_documentchangerequest and not perms.megdocs.change_documentchangerequest and change_request.is_approved and change_request.auditor_id == request.user.auditor.pk %}
+                    {% icon 'plus' %} {% trans 'Add Version' %}
+                {% else %}
+                    {% icon 'list' %} {% trans 'View' %}
+                {% endif %}
+            </a>
+        </div>
+    </div>
+{% else %}
+    <td class="actions">
+        {% if perms.megdocs.add_documentchangerequest and not perms.megdocs.change_documentchangerequest and change_request.is_approved and change_request.auditor_id == request.user.auditor.pk and change_request.document.current_version.source %}
+            <a class="btn btn-primary btn-sm block" href="{{ change_request.document.current_version.source_file_url }}">
+                {% icon 'download' %} {% trans 'Word Version' %}
+            </a></br>
+        {% endif %}
+        <a class="btn btn-sm btn-default block" hx-get hx-target="#meg-dialog .modal-body" hx-vals='{"change_request_id": {{change_request.id}} }' hx-swap="innerHTML" data-toggle="tooltip" data-placement="bottom" title="{% trans 'View' %}" >
+            {% if perms.megdocs.add_documentchangerequest and not perms.megdocs.change_documentchangerequest and change_request.is_approved and change_request.auditor_id == request.user.auditor.pk %}
+                {% icon 'plus' %} {% trans 'Add Version' %}
+            {% else %}
+                {% icon 'list' %} {% trans 'View' %}
+            {% endif %}
+        </a>
+    </td>
+{% endif %}

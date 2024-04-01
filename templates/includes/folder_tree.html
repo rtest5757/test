@@ -1,0 +1,103 @@
+{% load megforms_extras %}
+{% load i18n %}
+{% load mptt_tags %}
+{% load static %}
+{% load megdocs %}
+
+{% if full_screen %}
+    {% url 'docs:view:doc-list-bookmarks-fullscreen' institution_slug=view.institution.slug as bookmarks_url %}
+    {% url 'docs:view:doc-list-fullscreen' institution_slug=view.institution.slug as docs_url %}
+{% else %}
+    {% url 'docs:manage:doc-list-bookmarks' institution_slug=view.institution.slug as bookmarks_url %}
+    {% url 'docs:manage:doc-list' institution_slug=view.institution.slug as docs_url %}
+{% endif %}
+
+{% url 'docs:manage:pending-requests-list' institution_slug=view.institution.slug as pending_requests_url %}
+{% url 'docs:manage:awaiting-publish-list' institution_slug=view.institution.slug as awaiting_publish_url %}
+{% url 'docs:manage:assigned-list' institution_slug=view.institution.slug as review_url %}
+{% url 'docs:manage:doc-list' institution_slug=view.institution.slug as manage_url %}
+{% url 'docs:manage:doc-list-archived' institution_slug=view.institution.slug as archived_url %}
+{% url 'docs:manage:folder-permission-rules' institution_slug=view.institution.slug as folder_permission_rule_list_url %}
+
+<aside class="left-container">
+    <div class="folder-list">
+        <div class="folders header">
+            <a class="folders-controller">{% icon 'chevron-down' %}<span class="title">{% trans "Folders" %}</span></a>
+            {% if manage and not full_screen %}
+                <a class="create-folder" href="{% url "docs:manage:folder-create" institution_slug=institution.slug %}">
+                    {% icon 'plus' %}
+                </a>
+            {% endif %}
+        </div>
+        <div class="folders">
+            {% if manage and not full_screen %}
+                <a class="folder {% if review_url in request.path %}active{% else %}secondary{% endif %}" href="{{ review_url }}">
+                    <div class="icon review"></div>
+                    <div class="name">{% trans 'For review' %}</div>
+                    <div class="count"></div>
+                </a>
+            {% endif %}
+            {% if manage and not full_screen %}
+                <a class="folder {% if request.path == awaiting_publish_url %}active{% else %}secondary{% endif %}" href="{{ awaiting_publish_url }}">
+                    <div class="icon awaiting-publish"></div>
+                    <div class="name">{% trans 'Awaiting publish' %}</div>
+                    <div class="count"></div>
+                </a>
+            {% endif %}
+            <a class="folder {% if request.path == bookmarks_url %}active{% else %}secondary{% endif %}" href="{{ bookmarks_url }}">
+                <div class="icon bookmark"></div>
+                <div class="name">{% trans 'Bookmarked' %}</div>
+                <div class="count"></div>
+            </a>
+            {% if change_requests_enabled %}
+                {% if request.user.auditor.can_view_pending_requests %}
+                <a class="folder {% if request.path == pending_requests_url %}active{% else %}secondary{% endif %}" href="{{ pending_requests_url }}">
+                    <div class="icon change-request"></div>
+                    <div class="name">{% trans 'Pending requests' %}</div>
+                    <div class="count"></div>
+                </a>
+                {% endif %}
+            {% endif %}
+            <a class="folder {% if request.path == docs_url %}active{% endif %}" href="{{ docs_url }}">
+                <div class="icon all-documents"></div>
+                <div class="name">{% trans 'All documents' %}</div>
+                {% if filtered_doc_count is not None or doc_count is not None %}
+                <div class="count">
+                    {{ filtered_doc_count|default:doc_count }}
+                </div>
+                {% endif %}
+            </a>
+            {% recursetree folders %}
+                <a class="folder {% if folder.id == node.id %}active{% endif %}" href="{% url folder_url folder=node.id institution_slug=institution.slug %}">
+                    <div class="icon folder{% if node.id in folder.ancestors %}-open{% endif %}" style="margin-left:{% widthratio node.indentation_levels 1 20 %}px"></div>
+                    <div class="name">{{ node.name }}</div>
+                    {% if node.documents_count != None %}
+                        <div class="count">{{ node.documents_count }}</div>
+                    {% endif %}
+                </a>
+                {% if not node.is_leaf_node %}
+                    <div style="{% if not folder %}display:none{% elif node.id not in folder.ancestors %}display:none{% endif %}">{{ children }}</div>
+                {% endif %}
+            {% endrecursetree %}
+            {% if manage and not full_screen %}
+                <a class="folder {% if request.path == archived_url %}active{% else %}secondary{% endif %}" href="{{ archived_url }}">
+                    <div class="icon archive"></div>
+                    <div class="name">{% trans 'Archived' %}</div>
+                    <div class="count"></div>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    {% if manage and not full_screen %}
+        {% if perms.megdocs.view_folderpermissionrule %}
+            <a href="{{ folder_permission_rule_list_url }}" class="btn btn-primary" style="width: 100%; margin-top:10px">{% icon 'lock' %} {% trans 'Permission rules' %}</a>
+        {% endif %}
+        {% if folder %}
+            <a href="{% url 'docs:manage:folder-update' pk=folder.id institution_slug=institution.slug %}" class="btn btn-primary" style="width: 100%; margin-top:10px">{% icon 'edit' %} {% trans 'Edit folder' %}</a>
+        {% endif %}
+    {% endif %}
+</aside>
+
+{% block scripts %}
+    <script src="{% static 'js/folder-controller.js' %}"></script>
+{% endblock %}

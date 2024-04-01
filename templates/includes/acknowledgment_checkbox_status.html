@@ -1,0 +1,19 @@
+{% load i18n %}
+{% load static %}
+{% load megdocs %}
+
+{% if document.has_checkbox %}
+    <div class="ack-checkbox-container">
+        {% if not document.is_acknowledged %}
+            <div class="document-acknowledgment-checkbox">
+                <span class="ack-checkbox"></span>
+                <span class="ack-text-status">{% trans 'Requires Acknowledgement' %}</span>
+            </div>
+        {% else %}
+            <div class="document-acknowledged">
+                <img class="icon-ack" src="{% static 'images/icons/Icon-acknowledge.svg' %}">
+                <span class="ack-text">{% trans 'Acknowledged' %}</span>
+            </div>
+        {% endif %}
+    </div>
+{% endif %}

@@ -1,0 +1,51 @@
+{% extends 'document_base.html' %}
+{% load bootstrap3 %}
+{% load i18n %}
+{% load static %}
+{% load megdocs %}
+
+{% block content %}
+    <section class="documents">
+        <section class="header-toolbar">
+            {% include 'includes/header_toolbar_controller.html' %}
+            {% include 'dashboard/toolbar.html' %}
+            {% include 'dashboard/overview_filter.html' with url='docs:manage:doc-list' %}
+        </section>
+        <section class="flex-container">
+            {% include 'includes/folder_tree.html' with doc_tab='manage' folder_url='docs:manage:doc-list' %}
+            <article class="data-content with-aside">
+                <table class="table table-striped document-list">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th>{% trans 'Title' %}</th>
+                            {% if manage and not full_screen %}
+                                <th>{% trans 'Version' %}</th>
+                                <th>{% trans 'Version Updated' %}</th>
+                                <th>{% trans 'Document Owner' %}</th>
+                            {% endif %}
+                            <th>{% trans 'Type' %}</th>
+                            <th>{% trans 'Requested by' %}</th>
+                            <th>{% trans 'Requested on' %}</th>
+                            <th>{% trans 'Request status' %}</th>
+                            <th>{% trans 'Action' %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for change_request in object_list %}
+                            {% with actions_template='includes/change_request_list_table_row_actions.html' document=change_request.document %}
+                            {% include "includes/document_list_table_row.html" %}
+                            {% endwith %}
+                        {% empty %}
+                            <tr>
+                                <td colspan="10" class="text-danger mobile-show">{{ filter_form.no_results_message }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {# bootstrap_pagination page_obj extra=request.GET.urlencode #}
+            </article>
+        </section>
+    </section>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% load megforms_extras %}
+{% load i18n %}
+
+{% for link in links %}
+    <div class="flexed-row row-bottom-border" data-id="{{ link.id }}">
+        <div class="column"><a href="{{ link.url }}" style="display: block;" target="_blank">{% icon 'new-window' 'mr10' %}{{ link.name }}</a></div>
+        <div class="column">
+            <a class="btn btn-default btn-sm" hx-target="#form-document-link-popup" hx-get="{% url 'docs:manage:doc-link' institution_slug=institution.slug pk=document.pk link=link.pk %}">
+                {% icon 'pencil' %}
+            </a>
+        </div>
+    </div>
+{% empty %}
+    {% trans 'No links for this document' %}
+{% endfor %}

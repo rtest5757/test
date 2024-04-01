@@ -1,0 +1,12 @@
+{% extends "email_extras/email_base.html" %}
+{% load i18n %}
+
+{% block main %}
+    {% firstof owner.user.first_name owner.username as owner_name %}
+    {% firstof editor.user.first_name editor.username as editor_name %}
+    {% blocktrans %}Dear {{ owner_name }},{% endblocktrans %}<br />
+    {% if email_context %}{{ email_context|linebreaks }}<br />{% endif %}
+    {% blocktrans %}{{ editor_name }} has made you the owner of {{ document_name }}. You can find the document here:{% endblocktrans %}
+    <hr style="border:1px solid #ececec"/>
+    <p><a class="meg-email-btn-orange" href="{{ document_url }}">{{ document_url }}</a></p>
+{% endblock %}

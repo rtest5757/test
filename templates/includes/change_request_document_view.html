@@ -1,0 +1,67 @@
+{% load megforms_extras %}
+{% load bootstrap3 %}
+{% load i18n %}
+{% load js %}
+
+<form id="change-request-document-form" hx-post="" hx-vals='{"_action": "change-request", "change_request_id": {{change_request.id}} }' hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' method="post" hx-encoding="multipart/form-data" hx-target="#change-request-document-form" hx-swap="outerHTML">
+    {% csrf_token %}
+    {% if can_approve_or_decline and change_request.is_archive %}
+        <div class="alert alert-warning">
+            {% trans 'Approving an archive request will automatically archive the document' %}
+        </div>
+    {% endif %}
+    <h5 style="margin-bottom: 0">
+        <a {% if change_request.document.current_version %} href="{{ change_request.document.get_absolute_url }}"{% endif %}>
+            {% if change_request.document %}{{change_request.document}}{% else %}{% trans 'New Document' %}{% endif %}
+        </a>
+    </h5>
+    <h5>
+        {% blocktrans with user=change_request.auditor datetime=change_request.created %}Change request by {{ user }} on {{ datetime }}{% endblocktrans %}
+    </h5>
+    {% if change_request.description %}
+        <div>
+            <h5 class="capitalize">{% trans 'description of change' %}</h5>
+            <p>{{ change_request.description|linebreaksbr }}</p>
+        </div>
+    {% endif %}
+    <div>
+        <h5 class="capitalize">{% trans 'reason of suggested change' %}</h5>
+        <p>{{ change_request.reason|linebreaksbr }}</p>
+    </div>
+    <div class="mt10">
+        {% if can_approve_or_decline %}
+            <button type="submit" class="btn btn-danger" name="_decline" value="1">
+                {% icon 'remove' %} {% trans 'Decline' %}
+            </button>
+            <button type="submit" class="btn btn-success" name="_approve" value="1">
+                {% icon 'ok' %} {% trans 'Approve' %}
+            </button>
+        {% endif %}
+        {% if change_request.is_approved and change_request.auditor_id == request.user.auditor.pk and form %}
+            {% bootstrap_form form %}
+            {% if change_request.document_id and change_request.document.current_version_id and change_request.document.current_version.source %}
+                <a class="btn btn-primary" href="{{ change_request.document.current_version.source_file_url }}">
+                    {% icon 'download' %} {% trans 'Download Word Version' %}
+                </a>
+            {% endif %}
+            {% bootstrap_button submit_label button_class='btn-success' icon='plus' button_type='submit' %}
+        {% endif %}
+    </div>
+    {{ form.media }}
+    <script>
+        var dialog = $('#meg-dialog');
+        dialog.find('.modal-title').text('{% if change_request.is_edit %}{% trans 'Document Change Suggestion' %}{% elif change_request.is_archive %}{% trans 'Document archive suggestion' %}{% else %}{% trans 'New Document Suggestion' %}{% endif %}');
+        dialog.find('.modal-footer').html('');
+        dialog.modal();
+    </script>
+</form>
+{% include 'includes/toast_status_message.html' %}
+{% if status_message %}
+    <script>
+        $('#meg-dialog').modal('hide');
+        toastStatus();
+        setTimeout(function() {
+            window.location.reload();
+        }, 250);
+    </script>
+{% endif %}

@@ -1,0 +1,94 @@
+{% extends 'document_base.html' %}
+{% load megforms_extras %}
+{% load bootstrap3 %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+    <section class="documents">
+        <section class="header-toolbar">
+            {% include 'includes/header_toolbar_controller.html' %}
+            {% include 'dashboard/toolbar.html' %}
+            {% include 'includes/folder_permission_rule_search.html' with search_url='docs:manage:folder-permission-rules' %}
+        </section>
+        <section class="flex-container">
+            {% include 'includes/folder_tree.html' with doc_tab='manage' folder_url='docs:manage:doc-list' %}
+            <article class="data-content with-aside">
+                <table class="table table-striped document-list">
+                    <thead>
+                        <tr>
+                            <th>{% trans 'Title' %}</th>
+                            <th>{% trans 'Folders' %}</th>
+                            <th>{% trans 'Teams' %}</th>
+                            <th>{% trans 'Users' %}</th>
+                            <th>{% trans 'Role' %}</th>
+                            <th>{% trans 'Owner' %}</th>
+                            <th>{% trans 'Action' %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rule in folderpermissionrule_list %}
+                            <tr>
+                                <td class="column-content">
+                                    <div class="desktop">
+                                        <div class="document-title">{{rule.name}}</div>
+                                    </div>
+                                    <div class="mobile">
+                                        <div class="document-title">{{rule.name}}</div>
+                                        <div class="document-info">
+                                            <a class="document-info-controller">{% icon 'chevron-down' %}</a>
+                                            <div class="{% if rule.folders.count > 5 %}ellipsis-multi ellipsis-2-lines{% endif %}">{{ rule.folders.all|join:', '|default:_('All folders') }}</div>
+                                            <div class="document-additional-info">
+                                                <div class="dms-column">
+                                                    <div class="document-label">{% trans 'Owner' %}</div>
+                                                    <div class="document-value">{{rule.owner}}</div>
+                                                </div>
+                                                <div class="dms-column">
+                                                    <div class="document-label">{% trans 'Teams' %}</div>
+                                                    <div class="document-value">{{rule.teams.all|join:', '}}</div>
+                                                </div>
+                                                <div class="dms-column">
+                                                    <div class="document-label">{% trans 'Users' %}</div>
+                                                    <div class="document-value">{{rule.users.all|join:', '}}</div>
+                                                </div>
+                                                <div class="dms-column">
+                                                    <div class="document-label">{% trans 'Role' %}</div>
+                                                    <div class="document-value">{{rule.role}}</div>
+                                                </div>
+                                                {% if perms.megdocs.change_folderpermissionrule %}
+                                                    <div class="document-actions">
+                                                        <div class="btn-group btn-group-sm">
+                                                            <a href="{% url 'docs:manage:folder-permission-rule-update' institution_slug=institution.slug pk=rule.pk %}" class="btn btn-default btn-sm" title="{% trans 'Edit properties of this rule' %}" data-toggle="tooltip" data-placement="bottom">{% icon 'edit' %}</a>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td width="260"><div class="{% if rule.folders.count > 5 %}ellipsis-multi ellipsis-2-lines{% endif %}">{{ rule.folders.all|join:', '|default:_('All folders') }}</div></td>
+                                <td>{{rule.teams.all|join:', '}}</td>
+                                <td>{{rule.users.all|join:', '}}</td>
+                                <td>{{rule.role}}</td>
+                                <td>{{rule.owner}}</td>
+                                <td class="actions">
+                                    {% if perms.megdocs.change_folderpermissionrule %}
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'docs:manage:folder-permission-rule-update' institution_slug=institution.slug pk=rule.pk %}" class="btn btn-default btn-sm" title="{% trans 'Edit properties of this rule' %}" data-toggle="tooltip" data-placement="bottom">{% icon 'edit' %}</a>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="10" class="text-danger mobile-show">
+                                    {% trans 'No folder permission rules' %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </article>
+        </section>
+    </section>
+{% endblock %}
